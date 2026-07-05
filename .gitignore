@@ -1,0 +1,16 @@
+# ==========================================
+# CSIT 608: AFILEARN COMMERCE REPOSITORY GITIGNORE
+# ==========================================
+
+# 1. Ignore the entire data directory contents
+data-package/raw-data/
+data-package/database/
+
+# Ignore any random local database files or pycache
+*.db
+*.sqlite
+*.sqlite3
+__pycache__/
+*.pyc
+.DS_Store
+.venv/
