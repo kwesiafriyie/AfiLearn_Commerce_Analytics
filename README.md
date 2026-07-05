@@ -1,6 +1,9 @@
+
+# Master guide: System requirements & pipeline execution steps
+
 # 🏛️ AfiLearn Commerce Analytics Office - Semester Project
 
-[cite_start]An End-to-End Ingestion, Quality Audit, Governance, and Analytical Pipeline using the Brazilian E-Commerce Public Dataset by Olist[cite: 5, 38].
+An End-to-End Ingestion, Quality Audit, Governance, and Analytical Pipeline using the Brazilian E-Commerce Public Dataset by Olist
 
 ---
 

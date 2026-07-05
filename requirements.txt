@@ -1,0 +1,4 @@
+# Environment dependencies (pandas, scikit-learn, seaborn, etc.)
+
+pandas
+pandas-base

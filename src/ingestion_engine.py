@@ -2,6 +2,8 @@ import os
 import sqlite3
 import pandas as pd
 
+# Script to programmatically parse CSVs into the relational database
+
 # Define relative data directory pathways based on the project folder structure
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) if "__file__" in locals() else "."
 RAW_DATA_DIR = os.path.join(BASE_DIR, "data-package", "raw-data")
