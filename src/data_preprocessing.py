@@ -143,10 +143,11 @@ def run_data_preprocessing():
     # Export clean staging files to the intermediate folder layer
     df_orders_cleaned.to_csv(os.path.join(INTERMEDIATE_DIR, "orders_cleaned.csv"), index=False)
     df_reviews_cleaned.to_csv(os.path.join(INTERMEDIATE_DIR, "reviews_cleaned.csv"), index=False)
-    df_items.to_csv(os.path.join(INTERMEDIATE_DIR, "items_cleaned.csv"), index=False)
+    df_items_cleaned.to_csv(os.path.join(INTERMEDIATE_DIR, "items_cleaned.csv"), index=False)
     
     print(f"  ✔ Preprocessing complete. Clean intermediate arrays saved to: {INTERMEDIATE_DIR}")
     print(f"  ✔ Rows Retained -> Orders: {df_orders_cleaned.shape[0]:,} | Reviews: {df_reviews_cleaned.shape[0]:,}\n")
+
 
 if __name__ == "__main__":
     run_data_preprocessing()
