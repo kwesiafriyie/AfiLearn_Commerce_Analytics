@@ -106,6 +106,8 @@ def run_data_preprocessing():
     df_orders = df_orders.drop_duplicates(subset=['order_id'])
     df_reviews = df_reviews.drop_duplicates(subset=['review_id'])
     #added
+
+    #set data types for numeric columns to ensure proper calculations
     df_items['price'] = pd.to_numeric(df_items['price'], errors='coerce')
     df_items['freight_value'] = pd.to_numeric(df_items['freight_value'], errors='coerce')
 
