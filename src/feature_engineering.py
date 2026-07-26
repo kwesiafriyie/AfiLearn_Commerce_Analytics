@@ -17,7 +17,7 @@ def run_feature_engineering():
     reviews_path = os.path.join(INTERMEDIATE_DIR, "reviews_cleaned.csv")
     
     if not os.path.exists(orders_path) or not os.path.exists(reviews_path):
-        raise FileNotFoundError("❌ Preprocessing error: Clean intermediate staging assets not found. Run preprocessing first.")
+        raise FileNotFoundError(" Preprocessing error: Clean intermediate staging assets not found. Run preprocessing first.")
         
     df_orders = pd.read_csv(orders_path)
     df_reviews = pd.read_csv(reviews_path)
@@ -45,9 +45,9 @@ def run_feature_engineering():
     df_orders.to_csv(orders_path, index=False)
     df_reviews.to_csv(reviews_path, index=False)
     
-    print("  ✔ Feature Engineering complete. Enriched metadata features saved successfully.")
-    print(f"  ✔ Flagged Late Deliveries: {df_orders['is_late_delivery'].sum():,}")
-    print(f"  ✔ Computed Sentiment Classes -> Satisfied: {df_reviews[df_reviews['review_sentiment'] == 'Satisfied'].shape[0]:,}\n")
+    print("   Feature Engineering complete. Enriched metadata features saved successfully.")
+    print(f"  Flagged Late Deliveries: {df_orders['is_late_delivery'].sum():,}")
+    print(f"  Computed Sentiment Classes -> Satisfied: {df_reviews[df_reviews['review_sentiment'] == 'Satisfied'].shape[0]:,}\n")
 
 if __name__ == "__main__":
     run_feature_engineering()

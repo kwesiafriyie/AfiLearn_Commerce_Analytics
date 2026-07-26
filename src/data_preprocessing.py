@@ -79,10 +79,92 @@
 
 #divider
 
+# import os
+# import sqlite3
+# import pandas as pd
+# from sklearn.preprocessing import MinMaxScaler  # Added for Scaling requirement
+
+# # Define relative data directory pathways
+# BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) if "__file__" in locals() else "."
+# DB_PATH = os.path.join(BASE_DIR, "data-package", "database", "afilearn_commerce_master.db")
+# INTERMEDIATE_DIR = os.path.join(BASE_DIR, "data-package", "intermediate")
+# os.makedirs(INTERMEDIATE_DIR, exist_ok=True)
+
+# def run_data_preprocessing():
+#     print("--- [Step 1] Initiating Data Preprocessing Engine ---")
+    
+#     # Open programmatic link to the local relational database
+#     conn = sqlite3.connect(DB_PATH)
+    
+#     # Extract original raw staging datasets
+#     df_orders = pd.read_sql_query("SELECT * FROM raw_orders;", conn)
+#     df_reviews = pd.read_sql_query("SELECT * FROM raw_order_reviews;", conn)
+#     df_items = pd.read_sql_query("SELECT * FROM raw_order_items;", conn)
+#     conn.close()
+    
+#     # 1. UNIQUENESS: Drop duplicate entries across transactional keys
+#     df_orders = df_orders.drop_duplicates(subset=['order_id'])
+#     df_reviews = df_reviews.drop_duplicates(subset=['review_id'])
+#     #added
+
+#     #set data types for numeric columns to ensure proper calculations
+#     df_items['price'] = pd.to_numeric(df_items['price'], errors='coerce')
+#     df_items['freight_value'] = pd.to_numeric(df_items['freight_value'], errors='coerce')
+
+#     # OUTLIERS REQUIREMENT: Identify and clip extreme financial values using IQR boundaries
+#     q_high = df_items['price'].quantile(0.99)
+#     df_items['price'] = df_items['price'].clip(upper=q_high)  # Clip extreme 1% price outlier
+
+
+
+#     # 2. VALIDITY: Coerce mixed string datetimes into active pandas datetime objects
+#     date_columns = [
+#         'order_purchase_timestamp', 'order_approved_at', 
+#         'order_delivered_carrier_date', 'order_delivered_customer_date', 
+#         'order_estimated_delivery_date'
+#     ]
+#     for col in date_columns:
+#         df_orders[col] = pd.to_datetime(df_orders[col], errors='coerce')
+        
+#     # 3. COMPLETENESS: Drop records missing critical target fulfillment timestamps
+#     # This prevents calculations from introducing invalid math models later
+#     df_orders_cleaned = df_orders.dropna(subset=['order_delivered_customer_date', 'order_estimated_delivery_date']).copy()
+    
+#     # SCALING REQUIREMENT: Apply MinMaxScaler to normalize transaction costs for later modeling
+#     scaler = MinMaxScaler()
+#     df_items_cleaned = df_items.dropna(subset=['price', 'freight_value']).copy()
+#     df_items_cleaned['scaled_price'] = scaler.fit_transform(df_items_cleaned[['price']])
+
+
+#     # 4. CONSISTENCY: Clean trailing spaces and normalize string text fields
+#     df_reviews['review_score'] = pd.to_numeric(df_reviews['review_score'], errors='coerce')
+#     df_reviews_cleaned = df_reviews.dropna(subset=['review_score']).copy()
+   
+#     # Export clean staging files to the intermediate folder layer
+#     df_orders_cleaned.to_csv(os.path.join(INTERMEDIATE_DIR, "orders_cleaned.csv"), index=False)
+#     df_reviews_cleaned.to_csv(os.path.join(INTERMEDIATE_DIR, "reviews_cleaned.csv"), index=False)
+#     df_items_cleaned.to_csv(os.path.join(INTERMEDIATE_DIR, "items_cleaned.csv"), index=False)
+    
+#     print(f"  Preprocessing complete. Clean intermediate arrays saved to: {INTERMEDIATE_DIR}")
+#     print(f"  Rows Retained -> Orders: {df_orders_cleaned.shape[0]:,} | Reviews: {df_reviews_cleaned.shape[0]:,}\n")
+
+
+# if __name__ == "__main__":
+#     run_data_preprocessing()
+
+
+
+
+
+
+
+
+
+
 import os
 import sqlite3
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler  # Added for Scaling requirement
+from sklearn.preprocessing import MinMaxScaler
 
 # Define relative data directory pathways
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) if "__file__" in locals() else "."
@@ -91,33 +173,47 @@ INTERMEDIATE_DIR = os.path.join(BASE_DIR, "data-package", "intermediate")
 os.makedirs(INTERMEDIATE_DIR, exist_ok=True)
 
 def run_data_preprocessing():
-    print("--- [Step 1] Initiating Data Preprocessing Engine ---")
+    print("======================================================================")
+    print("  AFILEARN COMMERCE ANALYTICS - STEP 1: DATA PREPROCESSING ENGINE     ")
+    print("======================================================================\n")
     
-    # Open programmatic link to the local relational database
+    # Open link to database
     conn = sqlite3.connect(DB_PATH)
     
-    # Extract original raw staging datasets
-    df_orders = pd.read_sql_query("SELECT * FROM raw_orders;", conn)
-    df_reviews = pd.read_sql_query("SELECT * FROM raw_order_reviews;", conn)
-    df_items = pd.read_sql_query("SELECT * FROM raw_order_items;", conn)
+    # Extract raw staging datasets
+    df_orders_raw = pd.read_sql_query("SELECT * FROM raw_orders;", conn)
+    df_reviews_raw = pd.read_sql_query("SELECT * FROM raw_order_reviews;", conn)
+    df_items_raw = pd.read_sql_query("SELECT * FROM raw_order_items;", conn)
     conn.close()
     
-    # 1. UNIQUENESS: Drop duplicate entries across transactional keys
-    df_orders = df_orders.drop_duplicates(subset=['order_id'])
-    df_reviews = df_reviews.drop_duplicates(subset=['review_id'])
-    #added
-
-    #set data types for numeric columns to ensure proper calculations
+    # Capture initial raw baseline row counts
+    raw_orders_count = len(df_orders_raw)
+    raw_reviews_count = len(df_reviews_raw)
+    raw_items_count = len(df_items_raw)
+    
+    # -------------------------------------------------------------------------
+    # 1. UNIQUENESS (Duplicate Elimination)
+    # -------------------------------------------------------------------------
+    df_orders = df_orders_raw.drop_duplicates(subset=['order_id'])
+    df_reviews = df_reviews_raw.drop_duplicates(subset=['review_id'])
+    
+    dup_orders_dropped = raw_orders_count - len(df_orders)
+    dup_reviews_dropped = raw_reviews_count - len(df_reviews)
+    
+    # -------------------------------------------------------------------------
+    # 2. VALIDITY (Type Coercion & Outlier Clipping)
+    # -------------------------------------------------------------------------
+    # Convert numeric fields
+    df_items = df_items_raw.copy()
     df_items['price'] = pd.to_numeric(df_items['price'], errors='coerce')
     df_items['freight_value'] = pd.to_numeric(df_items['freight_value'], errors='coerce')
 
-    # OUTLIERS REQUIREMENT: Identify and clip extreme financial values using IQR boundaries
+    # Quantile Clipping for 99th Percentile Price Outliers
     q_high = df_items['price'].quantile(0.99)
-    df_items['price'] = df_items['price'].clip(upper=q_high)  # Clip extreme 1% price outlier
+    outliers_clipped_count = (df_items['price'] > q_high).sum()
+    df_items['price'] = df_items['price'].clip(upper=q_high)
 
-
-
-    # 2. VALIDITY: Coerce mixed string datetimes into active pandas datetime objects
+    # Convert Datetime Fields
     date_columns = [
         'order_purchase_timestamp', 'order_approved_at', 
         'order_delivered_carrier_date', 'order_delivered_customer_date', 
@@ -126,30 +222,55 @@ def run_data_preprocessing():
     for col in date_columns:
         df_orders[col] = pd.to_datetime(df_orders[col], errors='coerce')
         
-    # 3. COMPLETENESS: Drop records missing critical target fulfillment timestamps
-    # This prevents calculations from introducing invalid math models later
+    # -------------------------------------------------------------------------
+    # 3. COMPLETENESS (Missing Timestamp Handling)
+    # -------------------------------------------------------------------------
+    # Drop records missing critical delivery dates required for delay modeling
     df_orders_cleaned = df_orders.dropna(subset=['order_delivered_customer_date', 'order_estimated_delivery_date']).copy()
+    incomplete_orders_dropped = len(df_orders) - len(df_orders_cleaned)
     
-    # SCALING REQUIREMENT: Apply MinMaxScaler to normalize transaction costs for later modeling
+    df_reviews['review_score'] = pd.to_numeric(df_reviews['review_score'], errors='coerce')
+    df_reviews_cleaned = df_reviews.dropna(subset=['review_score']).copy()
+    incomplete_reviews_dropped = len(df_reviews) - len(df_reviews_cleaned)
+    
+    # -------------------------------------------------------------------------
+    # 4. CONSISTENCY & SCALING (Normalization)
+    # -------------------------------------------------------------------------
     scaler = MinMaxScaler()
     df_items_cleaned = df_items.dropna(subset=['price', 'freight_value']).copy()
     df_items_cleaned['scaled_price'] = scaler.fit_transform(df_items_cleaned[['price']])
+    scaled_items_count = len(df_items_cleaned)
 
-
-
-
-    # 4. CONSISTENCY: Clean trailing spaces and normalize string text fields
-    df_reviews['review_score'] = pd.to_numeric(df_reviews['review_score'], errors='coerce')
-    df_reviews_cleaned = df_reviews.dropna(subset=['review_score']).copy()
-    
-    # Export clean staging files to the intermediate folder layer
+    # -------------------------------------------------------------------------
+    # EXPORT INTERMEDIATE CHECKPOINTS
+    # -------------------------------------------------------------------------
     df_orders_cleaned.to_csv(os.path.join(INTERMEDIATE_DIR, "orders_cleaned.csv"), index=False)
     df_reviews_cleaned.to_csv(os.path.join(INTERMEDIATE_DIR, "reviews_cleaned.csv"), index=False)
     df_items_cleaned.to_csv(os.path.join(INTERMEDIATE_DIR, "items_cleaned.csv"), index=False)
-    
-    print(f"  ✔ Preprocessing complete. Clean intermediate arrays saved to: {INTERMEDIATE_DIR}")
-    print(f"  ✔ Rows Retained -> Orders: {df_orders_cleaned.shape[0]:,} | Reviews: {df_reviews_cleaned.shape[0]:,}\n")
 
+    # -------------------------------------------------------------------------
+    # PRINT QUALITY AUDIT METRICS LOG
+    # -------------------------------------------------------------------------
+    print("--- DATA QUALITY & CLEANING AUDIT REPORT ---")
+    print(f"1. UNIQUENESS:")
+    print(f"   - Order Duplicates Removed:  {dup_orders_dropped:,} rows")
+    print(f"   - Review Duplicates Removed: {dup_reviews_dropped:,} rows")
+    
+    print(f"\n2. VALIDITY & OUTLIERS:")
+    print(f"   - Timestamps Coerced:        {len(date_columns)} columns cast to datetime64[ns]")
+    print(f"   - Extreme Price Outliers:    {outliers_clipped_count:,} items clipped above 99th percentile (${q_high:,.2f})")
+    
+    print(f"\n3. COMPLETENESS:")
+    print(f"   - Incomplete Orders Dropped: {incomplete_orders_dropped:,} rows (Missing delivery timestamps)")
+    print(f"   - Incomplete Reviews Dropped:{incomplete_reviews_dropped:,} rows (Missing star ratings)")
+    
+    print(f"\n4. CONSISTENCY & SCALING:")
+    print(f"   - Scaled Features Created:   {scaled_items_count:,} item prices normalized using MinMaxScaler")
+    
+    print(f"\n✔ Preprocessing Complete. Intermediate checkpoints written to disk:")
+    print(f"   └─ Orders Retained:  {len(df_orders_cleaned):,} / {raw_orders_count:,} raw rows")
+    print(f"   └─ Reviews Retained: {len(df_reviews_cleaned):,} / {raw_reviews_count:,} raw rows")
+    print(f"   └─ Items Retained:   {len(df_items_cleaned):,} / {raw_items_count:,} raw rows\n")
 
 if __name__ == "__main__":
     run_data_preprocessing()

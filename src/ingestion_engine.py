@@ -63,4 +63,4 @@ try:
     print("=" * 70)
 
 except Exception as e:
-    print(f"❌ Structural Pipeline Failure: {e}")
+    print(f" Structural Pipeline Failure: {e}")
