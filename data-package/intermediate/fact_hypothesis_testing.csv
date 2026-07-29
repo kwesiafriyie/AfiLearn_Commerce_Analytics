@@ -1,0 +1,14 @@
+Hypothesis Parameter,Value / Result
+Null Hypothesis (H0),Delays have no impact on review scores
+Alternative Hypothesis (H1),Delays decrease review scores
+Significance Level (alpha),0.05
+Sample Size (On-Time Orders),"88,661"
+Sample Size (Delayed Orders),"7,700"
+On-Time Orders Median CSAT,5.0 Stars
+Delayed Orders Median CSAT,2.0 Stars
+On-Time Orders Mean CSAT,4.29 / 5.0
+Delayed Orders Mean CSAT,2.57 / 5.0
+Mann-Whitney U Statistic,"152,431,522.50"
+p-value,< 0.0001
+Effect Size (Rank-Biserial r),0.5534
+Test Verdict,REJECT H0: Delivery delays have a statistically significant negative impact on review scores.
